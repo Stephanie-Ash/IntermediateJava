@@ -62,7 +62,7 @@ public class TestingJDBC {
 //	}
 	
 	// Create
-	public void create(Customer customer) {
+	public Customer create(Customer customer) {
 		try(Connection conn = DriverManager.getConnection(jdbcConnectionURL, username, password);
 				PreparedStatement statement = conn.prepareStatement("INSERT INTO customer (first_name, last_name, email) VALUES (?,?,?)")) {
 			
@@ -72,10 +72,12 @@ public class TestingJDBC {
 			statement.executeUpdate();
 	
 			System.out.println("Customer created.");
+			return readLatest();
 			
 		} catch(SQLException e) {
 			e.printStackTrace();
 		}
+		return null;
 	}
 	
 	// Model from ResultSet method
@@ -127,7 +129,17 @@ public class TestingJDBC {
 	}
 	
 	// Read latest entry
-	
+	public Customer readLatest() {
+		try (Connection conn = DriverManager.getConnection(jdbcConnectionURL, username, password);
+				Statement statement = conn.createStatement();
+				ResultSet resultSet = statement.executeQuery("SELECT * FROM customer ORDER BY id DESC LIMIT 1");) {
+			resultSet.next();
+			return customerFromResultSet(resultSet);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 	
 	// Update
 	public Customer update(Customer customer) {
